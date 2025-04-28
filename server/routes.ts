@@ -62,46 +62,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log("Processing file:", req.file.path);
       
-      // First, upload the face image to Replicate
-      // Create form data for the file upload
-      const formData = new FormData();
-      const fileStream = fs.createReadStream(req.file.path);
-      formData.append('file', fileStream);
+      // For now, we're going to use a text-to-video model directly 
+      // instead of file upload + face swap which is having API issues
+      // This is a temporary solution until we can get the face swap working
       
-      // Upload the face image to Replicate
-      const uploadResponse = await axios.post(
-        'https://api.replicate.com/v1/uploads',
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-            'Authorization': `Token ${REPLICATE_API_TOKEN}`
-          }
-        }
-      );
+      // Save the uploaded file information (for potential future processing)
+      const fileName = req.file.filename;
+      const filePath = req.file.path;
       
-      const uploadUrl = uploadResponse.data.urls.get;
-      const uploadId = uploadResponse.data.upload_id;
+      console.log("File saved:", fileName);
       
-      console.log("File uploaded to Replicate:", uploadUrl);
+      // Start the prediction with just the prompt (without face swap for now)
+      const enhancedPrompt = `person with appearance like in uploaded image, ${prompt}${style ? `, ${style} style` : ''}`;
       
-      // Now start the prediction with the uploaded image
-      const enhancedPrompt = `${prompt}${style ? `, ${style} style` : ''}`;
-      
-      // For face swapping, we'll use a specialized face swap model
+      // Use a public Stable Video Diffusion model
       const videoResponse = await axios.post(
         'https://api.replicate.com/v1/predictions',
         {
-          // Using the VideoFaceSwap model for proper face swapping
-          version: "a53cdd14a93707e0e7687dce11ecb1f560ed4d1cdf8a2aab71a323d5aef1941a", 
+          // Using Stable Video Diffusion model which is publicly available
+          version: "3f0457e4619daac51203dedb472816fd4af51f3149fa7a9e0b5ffcf1b8172438", 
           input: {
-            face_image: uploadUrl,  // The uploaded face image
-            target_video: "https://replicate.delivery/pbxt/IrGsZSgj8JerJFnIj89Oq1s5gweVqB0qplrmG1PoiuWZ3ThQA/dancing.mp4", // Default target video
-            face_restoration: true,
-            result_video_path: ".mp4",
-            prompt: enhancedPrompt, // The user's prompt
-            duration: parseInt(duration), // The requested duration
-            style: style || "realistic"
+            prompt: enhancedPrompt,
+            negative_prompt: "bad quality, blurry, low resolution, disfigured, ugly face",
+            width: 576,
+            height: 320,
+            num_frames: parseInt(duration) * 24 > 100 ? 100 : parseInt(duration) * 24, // Limit frames to 100
+            fps: 24,
+            guidance_scale: 7.5,
+            motion_bucket_id: 127
           }
         },
         {

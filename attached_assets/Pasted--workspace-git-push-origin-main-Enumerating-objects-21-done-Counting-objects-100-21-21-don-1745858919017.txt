@@ -1,0 +1,43 @@
+~/workspace$ git push origin main
+Enumerating objects: 21, done.
+Counting objects: 100% (21/21), done.
+Delta compression using up to 8 threads
+Compressing objects: 100% (16/16), done.
+Writing objects: 100% (17/17), 12.19 KiB | 4.06 MiB/s, done.
+Total 17 (delta 9), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (9/9), completed with 3 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Replicate API Token ———————————————————————————————
+remote:        locations:
+remote:          - commit: 9c8db733336780b0117a3b2929fa3e1e97548a1b
+remote:            path: attached_assets/Pasted--Delete-it-to-ensure-a-clean-start-pm2-delete-ai-video-creator-Start-with-environment-variables--1745855301501.txt:25
+remote:          - commit: 9c8db733336780b0117a3b2929fa3e1e97548a1b
+remote:            path: attached_assets/Pasted--root-pm2-logs-ai-video-creator-out-log-last-20-lines-0-ai-video-4-33-50-PM-express-serving-on-1745858436071.txt:39
+remote:          - commit: 9c8db733336780b0117a3b2929fa3e1e97548a1b
+remote:            path: attached_assets/Pasted--root-pm2-logs-ai-video-creator-out-log-last-20-lines-0-ai-video-4-33-50-PM-express-serving-on-1745858436071.txt:154
+remote:          - commit: 9c8db733336780b0117a3b2929fa3e1e97548a1b
+remote:            path: attached_assets/Pasted-oot-srv805777-var-www-ai-video-creator-First-stop-the-current-process-pm2-stop-ai-video-creator-1745856454002.txt:8
+remote:          - commit: 9c8db733336780b0117a3b2929fa3e1e97548a1b
+remote:            path: attached_assets/Pasted-oot-srv805777-var-www-ai-video-creator-First-stop-the-current-process-pm2-stop-ai-video-creator-1745856454002.txt:57
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/kieranwalkinsroware/VideoFaceSwap/security/secret-scanning/unblock-secret/2wMkcOdna4a4F8YcQz3kdj4mU84
+remote:     
+remote: 
+remote: 
+To https://github.com/kieranwalkinsroware/VideoFaceSwap
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/kieranwalkinsroware/VideoFaceSwap'
+~/workspace$ 
