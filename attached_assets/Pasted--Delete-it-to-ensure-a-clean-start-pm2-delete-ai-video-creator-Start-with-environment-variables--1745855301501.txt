@@ -1,0 +1,34 @@
+# Delete it to ensure a clean start
+pm2 delete ai-video-creator
+
+# Start with environment variables from the .env file
+pm2 start dist/index.js --name ai-video-creator --env-file .env
+[PM2] Applying action stopProcessId on app [ai-video-creator](ids: [ 0 ])
+[PM2] [ai-video-creator](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ ai-video-creator   │ cluster  │ 4    │ stopped   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+[PM2] Applying action deleteProcessId on app [ai-video-creator](ids: [ 0 ])
+[PM2] [ai-video-creator](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+
+  error: unknown option `--env-file'
+
+root@srv805777:/var/www/ai-video-creator# # Stop and delete
+pm2 delete ai-video-creator
+
+# Set the environment variables explicitly
+pm2 start dist/index.js --name ai-video-creator --env "DATABASE_URL=postgresql://dbuser:rT2_npOZIyVtsfzVGKr6@localhost:5432/ai_video_creator" --env "REPLICATE_API_TOKEN=r8_ObJWkf3HjVs8XXv3zXfLBB6W30B0W063r1iIa"
+[PM2][ERROR] Process or Namespace ai-video-creator not found
+[PM2] Starting /var/www/ai-video-creator/dist/index.js in fork_mode (1 instance)
+[PM2] Done.
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ ai-video-creator   │ fork     │ 0    │ online    │ 0%       │ 8.5mb    │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv805777:/var/www/ai-video-creator# 

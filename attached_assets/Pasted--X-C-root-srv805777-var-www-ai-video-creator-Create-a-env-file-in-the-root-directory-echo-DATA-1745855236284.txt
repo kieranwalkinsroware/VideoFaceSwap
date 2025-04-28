@@ -1,0 +1,36 @@
+^X^C
+root@srv805777:/var/www/ai-video-creator# # Create a .env file in the root directory
+echo 'DATABASE_URL=postgresql://dbuser:rT2_npOZIyVtsfzVGKr6@localhost:5432/ai_video_creator' > .env
+echo 'REPLICATE_API_TOKEN=r8_ObJWkf3HjVs8XXv3zXfLBB6W30B0W063r1iIa' >> .env
+
+# Restart the application
+pm2 restart ai-video-creator
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [ai-video-creator](ids: [ 0 ])
+[PM2] [ai-video-creator](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ ai-video-creator   │ cluster  │ 3    │ online    │ 0%       │ 51.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+root@srv805777:/var/www/ai-video-creator# pm2 logs ai-video-creator
+[TAILING] Tailing last 15 lines for [ai-video-creator] process (change the value with --lines option)
+/root/.pm2/logs/ai-video-creator-out-0.log last 15 lines:
+/root/.pm2/logs/ai-video-creator-error-0.log last 15 lines:
+0|ai-video | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|ai-video | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|ai-video |     at file:///var/www/ai-video-creator/dist/index.js:80:9
+0|ai-video |     at ModuleJob.run (node:internal/modules/esm/module_job:234:25)
+0|ai-video |     at async ModuleLoader.import (node:internal/modules/esm/loader:473:24)
+0|ai-video | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|ai-video | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|ai-video |     at file:///var/www/ai-video-creator/dist/index.js:80:9
+0|ai-video |     at ModuleJob.run (node:internal/modules/esm/module_job:234:25)
+0|ai-video |     at async ModuleLoader.import (node:internal/modules/esm/loader:473:24)
+0|ai-video | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|ai-video | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|ai-video |     at file:///var/www/ai-video-creator/dist/index.js:80:9
+0|ai-video |     at ModuleJob.run (node:internal/modules/esm/module_job:234:25)
+0|ai-video |     at async ModuleLoader.import (node:internal/modules/esm/loader:473:24)
+
+
