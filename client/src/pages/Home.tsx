@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import StepIndicator from "@/components/StepIndicator";
 import UploadStep from "@/components/UploadStep";
 import PromptStep from "@/components/PromptStep";
@@ -95,16 +95,17 @@ export default function Home() {
     }, 5000);
   };
 
-  // Handle API errors
-  if (isError && error) {
-    showNotification(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`, "error");
-  }
-
-  // Auto-advance to result page when processing is complete
-  if (isSuccess && step === 3) {
-    goToStep(4);
-    showNotification("Your AI video is ready!", "success");
-  }
+  // Handle API errors and success with useEffect to prevent infinite re-renders
+  useEffect(() => {
+    if (isError && error) {
+      showNotification(`Error: ${error instanceof Error ? error.message : 'Unknown error occurred'}`, "error");
+    }
+    
+    if (isSuccess && step === 3) {
+      goToStep(4);
+      showNotification("Your AI video is ready!", "success");
+    }
+  }, [isError, isSuccess, error, step]);
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
