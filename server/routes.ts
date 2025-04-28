@@ -59,36 +59,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!prompt) {
         return res.status(400).json({ message: "Prompt is required" });
       }
-
-      // For the initial implementation, instead of uploading to Replicate
-      // which seems to have API issues, we'll skip the file upload step
-      // and just use the Replicate model with a text prompt only
       
       console.log("Processing file:", req.file.path);
       
-      // In a production app, we would upload the file to Replicate here
-      // But for testing purposes with the database, we'll simulate it
+      // First, upload the face image to Replicate
+      // Create form data for the file upload
+      const formData = new FormData();
+      const fileStream = fs.createReadStream(req.file.path);
+      formData.append('file', fileStream);
       
-      // Dummy upload URL and ID for now
-      const uploadUrl = "https://replicate.com/uploads/example";
-      const uploadId = "test-upload-" + Date.now();
-
+      // Upload the face image to Replicate
+      const uploadResponse = await axios.post(
+        'https://api.replicate.com/v1/uploads',
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+            'Authorization': `Token ${REPLICATE_API_TOKEN}`
+          }
+        }
+      );
+      
+      const uploadUrl = uploadResponse.data.urls.get;
+      const uploadId = uploadResponse.data.upload_id;
+      
+      console.log("File uploaded to Replicate:", uploadUrl);
+      
       // Now start the prediction with the uploaded image
       const enhancedPrompt = `${prompt}${style ? `, ${style} style` : ''}`;
       
-      // For this example, we'll use a face swap model and a text-to-video model
-      // First, generate the base video from the prompt
+      // For face swapping, we'll use a specialized face swap model
       const videoResponse = await axios.post(
         'https://api.replicate.com/v1/predictions',
         {
-          version: "2d087d66a857642e3dc97df3558fa788f7e1dfaef73ec91f28a3522c47a09250", // Sample Replicate model
+          // Using the VideoFaceSwap model for proper face swapping
+          version: "a53cdd14a93707e0e7687dce11ecb1f560ed4d1cdf8a2aab71a323d5aef1941a", 
           input: {
-            prompt: enhancedPrompt,
-            negative_prompt: "bad quality, blurry, low resolution",
-            width: 576,
-            height: 320,
-            num_frames: parseInt(duration) * 24, // Frames based on duration
-            fps: 24
+            face_image: uploadUrl,  // The uploaded face image
+            target_video: "https://replicate.delivery/pbxt/IrGsZSgj8JerJFnIj89Oq1s5gweVqB0qplrmG1PoiuWZ3ThQA/dancing.mp4", // Default target video
+            face_restoration: true,
+            result_video_path: ".mp4",
+            prompt: enhancedPrompt, // The user's prompt
+            duration: parseInt(duration), // The requested duration
+            style: style || "realistic"
           }
         },
         {
@@ -98,7 +111,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       );
-
+      
       const predictionId = videoResponse.data.id;
 
       // Store the video creation record
@@ -151,18 +164,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Prediction ID is required" });
       }
 
-      // For testing purposes, we'll simulate the Replicate API response
-      // In a production app, we would check the actual status from Replicate
       console.log("Checking status for prediction:", predictionId);
       
-      // Simulate a successful prediction after 5 seconds
-      // In a real app, this would be the response from the Replicate API
-      const prediction = {
-        id: predictionId,
-        status: "succeeded",
-        output: ["https://replicate.delivery/pbxt/example-video-output.mp4"],
-        error: null
-      };
+      // Query the actual Replicate API for the prediction status
+      let prediction;
+      try {
+        const replicateResponse = await axios.get(
+          `https://api.replicate.com/v1/predictions/${predictionId}`,
+          {
+            headers: {
+              'Authorization': `Token ${REPLICATE_API_TOKEN}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        prediction = {
+          id: replicateResponse.data.id,
+          status: replicateResponse.data.status,
+          output: replicateResponse.data.output,
+          error: replicateResponse.data.error
+        };
+        
+        console.log("Replicate prediction status:", prediction.status);
+      } catch (error) {
+        console.error("Error fetching prediction from Replicate:", error);
+        // In case of error, default to a pending state
+        prediction = {
+          id: predictionId,
+          status: "processing",
+          output: null,
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
 
       // Find the video in our database
       const video = await storage.getVideoByPredictionId(predictionId);
