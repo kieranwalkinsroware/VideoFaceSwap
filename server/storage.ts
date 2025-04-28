@@ -1,4 +1,6 @@
 import { users, type User, type InsertUser, videos, type Video } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -14,85 +16,89 @@ export interface IStorage {
   listVideos(limit?: number): Promise<Video[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private videos: Map<number, Video>;
-  private userCurrentId: number;
-  private videoCurrentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.videos = new Map();
-    this.userCurrentId = 1;
-    this.videoCurrentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   // User-related operations
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   // Video-related operations
   async createVideo(videoData: Omit<Video, 'id' | 'createdAt' | 'metadata'>): Promise<Video> {
-    const id = this.videoCurrentId++;
-    const now = new Date().toISOString();
-    
-    const video: Video = { 
-      ...videoData, 
-      id, 
-      createdAt: now,
-      metadata: {}
-    };
-    
-    this.videos.set(id, video);
+    const [video] = await db
+      .insert(videos)
+      .values({
+        ...videoData,
+        metadata: {} // Initialize empty metadata
+      })
+      .returning();
     return video;
   }
 
   async getVideo(id: number): Promise<Video | undefined> {
-    return this.videos.get(id);
+    const [video] = await db
+      .select()
+      .from(videos)
+      .where(eq(videos.id, id));
+    return video;
   }
 
   async getVideoByPredictionId(predictionId: string): Promise<Video | undefined> {
-    return Array.from(this.videos.values()).find(
-      (video) => video.predictionId === predictionId,
-    );
+    const [video] = await db
+      .select()
+      .from(videos)
+      .where(eq(videos.predictionId, predictionId));
+    return video;
   }
 
   async updateVideo(id: number, updates: Partial<Video>): Promise<Video> {
-    const video = this.videos.get(id);
+    const [video] = await db
+      .update(videos)
+      .set(updates)
+      .where(eq(videos.id, id))
+      .returning();
+    
     if (!video) {
       throw new Error(`Video with ID ${id} not found`);
     }
     
-    const updatedVideo = { ...video, ...updates };
-    this.videos.set(id, updatedVideo);
-    return updatedVideo;
+    return video;
   }
 
   async listVideos(limit?: number): Promise<Video[]> {
-    const videos = Array.from(this.videos.values());
-    // Sort by creation date in descending order (newest first)
-    videos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
+    // Create the query without the limit first
+    const baseQuery = db
+      .select()
+      .from(videos)
+      .orderBy(desc(videos.createdAt));
+      
+    // Execute with limit if specified
     if (limit) {
-      return videos.slice(0, limit);
+      return await baseQuery.limit(limit);
     }
     
-    return videos;
+    // Execute without limit
+    return await baseQuery;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
