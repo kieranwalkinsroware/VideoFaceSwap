@@ -42,7 +42,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // Get Replicate API key from environment variables
-  const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
+  const REPLICATE_API_TOKEN = "r8_cvbYA8XelzodXfHEhipOkmi2EWgaRYS4OXUJ0"; // Temporarily hardcoded
   if (!REPLICATE_API_TOKEN) {
     console.warn("Warning: REPLICATE_API_TOKEN is not set. API calls to Replicate will fail.");
   }
